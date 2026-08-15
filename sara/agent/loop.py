@@ -95,22 +95,28 @@ class AgentRuntime:
 
     def _encode(self, text: str) -> torch.Tensor:
         ids = self.tokenizer.encode(text, add_bos=True)
-        ids = ids[: self.cfg.max_seq_len]
+        # leave room for generation; keep BOS + most recent context
+        limit = max(8, int(self.cfg.max_seq_len) - 32)
+        if len(ids) > limit:
+            ids = [ids[0]] + ids[-(limit - 1) :]
         return torch.tensor([ids], dtype=torch.long, device=self.device)
 
-    def generate_text(self, prompt: str, max_new: int = 96, temperature: float = 0.7) -> str:
+    def generate_text(self, prompt: str, max_new: int = 48, temperature: float = 0.7) -> str:
         if self.model is None or self.tokenizer is None:
             return ""
         ids = self._encode(prompt)
-        with torch.no_grad():
-            out = self.model.generate(
-                ids,
-                max_new=max_new,
-                temperature=temperature,
-                top_k=40,
-                eos_id=self.tokenizer.eos_id,
-                stop_ids=[self.tokenizer.id("<|eos|>"), self.tokenizer.id("<|user|>")],
-            )
+        try:
+            with torch.no_grad():
+                out = self.model.generate(
+                    ids,
+                    max_new=max_new,
+                    temperature=temperature,
+                    top_k=40,
+                    eos_id=self.tokenizer.eos_id,
+                    stop_ids=[self.tokenizer.id("<|eos|>"), self.tokenizer.id("<|user|>")],
+                )
+        except Exception:
+            return ""
         new_ids = out[0, ids.shape[1] :].tolist()
         return self.tokenizer.decode(new_ids)
 
@@ -198,7 +204,12 @@ class AgentRuntime:
             f"<|user|>Decompose into numbered steps: {goal}\n<|plan|>", max_new=80, temperature=0.5
         )
         parsed_plan = parse_plan_text(goal, plan_raw)
-        if parsed_plan and len(parsed_plan.steps) >= 2:
+        known = set(self.registry.names())
+        if (
+            parsed_plan
+            and len(parsed_plan.steps) >= 2
+            and any(s.tool in known for s in parsed_plan.steps)
+        ):
             plan = parsed_plan
         self.scratch.add("plan", plan.render())
 
@@ -260,9 +271,15 @@ class AgentRuntime:
             self.long_term.note(f"{call.name}: {obs[:400]}", tag="tool")
 
             if result.get("ok") and call.name in {"file_write", "image_gen", "audio_gen"}:
-                p = (result.get("result") or {}).get("path")
-                if p:
-                    artifacts.append(str(p))
+                pth = (result.get("result") or {}).get("path")
+                if pth:
+                    artifacts.append(str(pth))
+            if result.get("ok") and call.name == "shell":
+                rc = (result.get("result") or {}).get("returncode")
+                if rc == 0:
+                    for s in plan.steps:
+                        if (not s.done) and s.tool == "file_write" and "fix" in s.intent.lower():
+                            s.done = True
 
             # mark plan step done if matching tool succeeded; on failure, keep step for retry
             pending = plan.pending()
@@ -280,11 +297,20 @@ class AgentRuntime:
                                 s.done = False
                                 break
 
-            # if we just ran something successfully and no pending tools remain
-            if result.get("ok") and not any(s.tool and not s.done for s in plan.steps):
+            # Don't stop after a write if the plan still needs a run.
+            pending_tools = [s for s in plan.steps if s.tool and not s.done]
+            wrote_only = call.name == "file_write" and any(
+                s.tool in {"shell", "code_run"} for s in plan.steps
+            )
+            if result.get("ok") and not pending_tools and not wrote_only:
                 final_text = self._finalize(goal, last_obs)
                 self.scratch.add("final", final_text)
                 break
+            if wrote_only and result.get("ok"):
+                # queue the run on the next iteration via pending shell step
+                for s in plan.steps:
+                    if s.tool in {"shell", "code_run"}:
+                        s.done = False
         else:
             final_text = self._finalize(goal, last_obs) or "stopped: max steps"
 
@@ -299,23 +325,41 @@ class AgentRuntime:
         )
 
     def _finalize(self, goal: str, last_obs: Optional[str]) -> str:
+        # Prefer numeric/stdout payloads from any observation, not just the last write.
+        for e in reversed(self.scratch.events):
+            if e.kind != "observation":
+                continue
+            picked = _answer_from_obs(e.content)
+            if picked:
+                return picked
+        picked = _answer_from_obs(last_obs or "")
+        if picked:
+            return picked
         if last_obs:
-            try:
-                data = json.loads(last_obs)
-                res = data.get("result", data)
-                if isinstance(res, dict):
-                    if "stdout" in res and str(res.get("stdout", "")).strip():
-                        return str(res["stdout"]).strip()
-                    if "value" in res:
-                        return str(res["value"])
-                    if res.get("ok") and res.get("last") is not None:
-                        return str(res["last"])
-                return str(res)
-            except Exception:
-                return last_obs[:500]
+            return last_obs[:500]
         raw = self.generate_text(f"<|user|>{goal}\n<|final|>", max_new=48, temperature=0.4)
         parsed = parse_turn(raw)
         return (parsed.final or raw or "done").strip()[:500]
+
+
+def _answer_from_obs(obs: str) -> Optional[str]:
+    if not obs:
+        return None
+    try:
+        data = json.loads(obs)
+    except Exception:
+        return None
+    res = data.get("result", data) if isinstance(data, dict) else None
+    if not isinstance(res, dict):
+        return None
+    stdout = str(res.get("stdout") or "").strip()
+    if stdout:
+        return stdout
+    if "value" in res:
+        return str(res["value"])
+    if res.get("last") is not None:
+        return str(res["last"])
+    return None
 
 
 def extract_python(text: str) -> str:

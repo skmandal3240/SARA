@@ -44,10 +44,15 @@ def build_rope_cache(head_dim: int, max_seq: int, theta: float, device=None, dty
 
 
 def apply_rope(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor, start_pos: int = 0) -> torch.Tensor:
-    """x: (B, H, T, D); cos/sin: (max_T, D) or (T, D)."""
+    """x: (B, H, T, D); cos/sin: (max_T, D). Positions clamp into the cache."""
     t = x.shape[2]
-    cos = cos[start_pos : start_pos + t].unsqueeze(0).unsqueeze(0)  # (1,1,T,D)
-    sin = sin[start_pos : start_pos + t].unsqueeze(0).unsqueeze(0)
+    if t == 0:
+        return x
+    max_t = cos.shape[0]
+    idx = torch.arange(start_pos, start_pos + t, device=x.device)
+    idx = idx.clamp(0, max_t - 1)
+    cos = cos.index_select(0, idx).unsqueeze(0).unsqueeze(0)
+    sin = sin.index_select(0, idx).unsqueeze(0).unsqueeze(0)
     return x * cos + rotate_half(x) * sin
 
 
@@ -98,6 +103,10 @@ class GQAAttention(nn.Module):
         kv_cache: Optional[tuple[torch.Tensor, torch.Tensor]] = None,
     ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
         bsz, seqlen, _ = x.shape
+        if seqlen == 0:
+            empty_k = x.new_zeros(bsz, self.n_kv_heads, 0, self.head_dim)
+            cache = kv_cache if kv_cache is not None else (empty_k, empty_k)
+            return x, cache
         q = self.q_proj(x).view(bsz, seqlen, self.n_heads, self.head_dim).transpose(1, 2)
         k = self.k_proj(x).view(bsz, seqlen, self.n_kv_heads, self.head_dim).transpose(1, 2)
         v = self.v_proj(x).view(bsz, seqlen, self.n_kv_heads, self.head_dim).transpose(1, 2)

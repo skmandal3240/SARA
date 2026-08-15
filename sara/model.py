@@ -139,6 +139,16 @@ class SARA(nn.Module):
         eos_id = self.config.eos_id if eos_id is None else eos_id
         stop = set(stop_ids or [])
         stop.add(eos_id)
+        max_len = int(self.config.max_seq_len)
+        if tokens.numel() == 0 or tokens.shape[1] == 0:
+            tokens = torch.full((1, 1), self.config.bos_id, dtype=torch.long, device=tokens.device)
+            type_ids = None
+        if tokens.shape[1] >= max_len:
+            tokens = tokens[:, -(max_len - 1) :]
+            if type_ids is not None:
+                type_ids = type_ids[:, -tokens.shape[1] :]
+        room = max(1, max_len - tokens.shape[1])
+        max_new = min(max_new, room)
         kv = None
         # prefills
         out = self.forward(tokens, type_ids=type_ids, images=images, mel=mel, kv_caches=None, start_pos=0)
@@ -163,6 +173,8 @@ class SARA(nn.Module):
                 z = torch.zeros_like(nxt)
                 cur_type = torch.cat([cur_type, z], dim=1)
             if int(nxt[0, 0]) in stop:
+                break
+            if pos >= max_len - 1:
                 break
             out = self.forward(
                 nxt,
