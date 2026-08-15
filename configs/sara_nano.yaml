@@ -1,0 +1,26 @@
+# SARA nano — CPU-safe from-scratch multimodal + agent runtime
+preset: nano
+dim: 256
+n_layers: 6
+n_heads: 4
+n_kv_heads: 2
+mlp_mult: 2.5
+max_seq_len: 256
+vocab_size: 4096
+rope_theta: 10000.0
+qk_norm: true
+tie_embeddings: true
+img_size: 64
+patch_size: 8
+vision_layers: 2
+sample_rate: 16000
+n_mels: 64
+n_fft: 512
+hop_length: 160
+audio_frames: 64
+n_video_frames: 8
+video_size: 48
+n_note_steps: 32
+max_tools: 32
+max_agent_steps: 8
+dtype: fp32

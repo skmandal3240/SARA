@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sara-from-scratch"
+version = "0.1.0"
+description = "SARA: from-scratch multimodal transformer with a first-class agent/tool runtime"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.2",
+  "tokenizers>=0.15",
+  "numpy>=1.26",
+  "pillow>=10.0",
+  "pyyaml>=6.0",
+  "scipy>=1.11",
+  "soundfile>=0.12",
+]
+
+[tool.setuptools.packages.find]
+include = ["sara*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
