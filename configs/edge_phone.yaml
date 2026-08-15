@@ -1,0 +1,15 @@
+# SARA phone companion — talk/see/code on device, cloud off
+profile: phone
+ram_mb: 6144
+tops: 8.0
+cameras: 2
+radios: [wifi, lte]
+mesh_allowed: true
+cloud_allowed: false
+modalities: [text, vision, audio, code]
+policy_tags: [camera, vault, can_exec]
+npu: true
+battery: true
+quantize: int8
+paging: true
+role: sensor

@@ -145,12 +145,24 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(ROOT / "configs" / "sara_nano.yaml"))
     ap.add_argument("--vocab-size", type=int, default=None)
+    ap.add_argument(
+        "--source",
+        default=None,
+        help="hf:org/name or catalog id; streams a tiny sample via sara.data (never vendors TB)",
+    )
     args = ap.parse_args()
     cfg = load_config(args.config)
     vocab = args.vocab_size or cfg.vocab_size
 
     texts = list(TEXT) + CODE + [g + "\n" + t for g, t in TOOL_TRACES]
     texts += SPECIAL_TOKENS
+
+    if getattr(args, "source", None):
+        from sara.data.adapters import ingest_source
+
+        extra = ingest_source(args.source, max_tokens=2048)
+        texts.extend(extra)
+        print(f"source {args.source}: +{len(extra)} docs (capped)")
     texts += [
         "file_write shell python_exec calc now web_search list_files image_gen audio_gen code_run",
         "<|tool_call|>{\"name\": \"calc\", \"args\": {\"expr\": \"1+1\"}}<|tool_end|>",

@@ -1,0 +1,7 @@
+{
+  "family": "indic_speech",
+  "ids": [
+    "indicvoices"
+  ],
+  "note": "IndicVoices via HF sample; not in git"
+}

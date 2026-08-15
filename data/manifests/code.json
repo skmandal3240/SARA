@@ -1,0 +1,14 @@
+{
+  "family": "code",
+  "ids": [
+    "the_stack"
+  ],
+  "license_filter": [
+    "MIT",
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "BSD-2-Clause",
+    "ISC"
+  ],
+  "note": "The Stack license-filtered; never dump copyleft"
+}

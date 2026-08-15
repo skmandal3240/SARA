@@ -59,6 +59,8 @@ class AgentRuntime:
         max_steps: int = 8,
         max_tool_calls: int = 12,
         notes_path: Optional[str | Path] = None,
+        grants=None,
+        audit=None,
     ):
         self.workspace = Path(workspace).resolve()
         self.workspace.mkdir(parents=True, exist_ok=True)
@@ -71,8 +73,10 @@ class AgentRuntime:
         self.scratch = Scratchpad()
         notes_path = notes_path or (self.workspace / "outputs" / "sara_memory.json")
         self.long_term = LongTermMemory(notes_path)
+        self.grants = grants
+        self.audit = audit
         self.ctx = ToolContext(self.workspace, runtime=self)
-        self.registry = ToolRegistry()
+        self.registry = ToolRegistry(grants=grants, audit=audit)
         register_builtins(self.registry, self.ctx)
         self.sara = model  # alias used by modality tools
         self._tool_calls = 0

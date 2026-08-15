@@ -242,3 +242,31 @@ Chip-in-everything is the **end state**, not the SKU list for year 1.
 | `configs/edge_*.yaml` | Per-profile caps |
 
 Nano still trains with `train.py`. Edge demos must pass **without** a GPU.
+
+---
+
+## 14. Stolen protocols (Aug 15)
+
+We steal **protocols**, not repos. Ideas below are implemented in *this* tree or listed as YAGNI. Sister products stay sister products: **SARA** = model+agent kernel; **ASTRO** = permission kernel (grants/preview/audit **before** more powerful tools); **SHADE** = browser kernel (optional MCP stub, do not vendor); **ALICE** = UX only, not a Claude wrapper; **SIA** = grants collateral + INT8 path we restore here; **MODO** = a **cloud SKU**, not “nano scaled up”. MissedCallFix stays out of this repo.
+
+| Protocol | What we take | Where |
+|---|---|---|
+| TFLite-style interpreter + delegates | Same graph, swap CPU / INT8 / later NPU. No `#ifdef NVIDIA`. | `sara/edge` + `docs/ISA.md` |
+| Arena / two-stack memory | Bound scratch; don't grow RAM with the prompt. | `LayerPager` + profile `ram_mb` |
+| AirLLM block streaming | Page **one transformer block** at a time on 2–4 GB. | `sara/edge/paging.py` |
+| Gateway + nodes | Phone/CCTV = **sensor**; hub/server = **transformer**. | profiles `role`, mesh DAG |
+| Memory ≠ RAG | Typed **facts**, **forget**, **profile** inject. Not “embed the CCTV archive”. | `sara/agent/memory.py` |
+| Federated LoRA | **Deltas / adapters only.** Raw chat/video never uploads. | `sara/privacy/learn.py` |
+| Signed inference log | Model hash + quant + adapter id on every see/agent offload. | `sara/privacy/audit.py` |
+| Skill markdown contracts | Parse a skill file **before** adding a tool (Ponytail ladder). | `docs/skills/`, `sara/agent/skills.py` |
+| xVal NumberHead | Scalar `[NUM] * value` head next to ToolHead. | `sara/model.py` |
+| Ponytail / YAGNI | New tool needs a skill contract. Don't clone 40 agent frameworks. | this section |
+
+### Explicitly do NOT vendor
+
+- **claude-code** (leaked weights/source — not ours, not a dependency).
+- **MiroFish / Firecrawl** (AGPL — do not copy into this Apache-2.0 tree).
+- **OpenClaw as a distro** (ideas maybe; we are not their installer).
+- **15TB The Well** (scientific FM later; never dump into git or Phase A demos).
+
+Mesh in Phase A is an **in-process** task-DAG + profiles protocol, not a fleet gossip network. Silicon in Phase A is **ISA.md only**.

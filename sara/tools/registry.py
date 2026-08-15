@@ -32,8 +32,10 @@ class ToolSpec:
 
 
 class ToolRegistry:
-    def __init__(self):
+    def __init__(self, grants=None, audit=None):
         self._tools: dict[str, ToolSpec] = {}
+        self.grants = grants
+        self.audit = audit
 
     def register(self, spec: ToolSpec) -> None:
         self._tools[spec.name] = spec
@@ -73,6 +75,12 @@ class ToolRegistry:
         return None
 
     def dispatch(self, call: ToolCall) -> dict[str, Any]:
+        if self.grants is not None:
+            deny = self.grants.check_tool(call.name)
+            if deny:
+                if self.audit is not None:
+                    self.audit.record("tool_denied", tool=call.name, error=deny)
+                return {"ok": False, "tool": call.name, "error": deny, "grant_denied": True}
         try:
             spec = self.get(call.name)
             args = spec.validate(call.args)
@@ -86,6 +94,8 @@ class ToolRegistry:
                     if k in args and k != "self"
                 }
                 result = spec.fn(**allowed)
+            if self.audit is not None:
+                self.audit.record("tool_call", tool=call.name, ok=True)
             return {"ok": True, "tool": call.name, "result": result}
         except Exception as e:
             return {

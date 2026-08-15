@@ -1,0 +1,16 @@
+# SARA Cam — owner-operated CCTV, cloud off
+profile: cctv
+ram_mb: 2048
+tops: 4.0
+cameras: 4
+radios: [ethernet]
+mesh_allowed: true
+cloud_allowed: false
+modalities: [vision, text]
+policy_tags: [camera]
+npu: true
+quantize: int8
+paging: true
+owner_operated: true
+ssrf_deny: true
+role: sensor

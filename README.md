@@ -137,10 +137,26 @@ print(Swarm(rt).orchestrate("Write a python program that prints factorial of 6."
 sara/                 package (config, modules, model, tokenizer, vision, audio, video, music)
   tools/              protocol, registry, builtins
   agent/              loop, planner, swarm, memory
-configs/sara_nano.yaml
+  edge/               profiles, runtime, mesh, INT8, paging
+  privacy/            grants, vault, audit, local learn
+  data/               dataset catalog + HF adapters (no corpora)
+configs/              sara_nano.yaml + edge_*.yaml
 prepare_data.py  train.py  generate.py  demos.py  tools.py
 tests/           outputs/  data/  tokenizer/  checkpoints/
 ```
+
+## Edge / company
+
+SARA is meant to run **on the chip in the device**, not as a cloud API. Nano weights are a **runtime proof**, not a frontier model. Device profiles, INT8, layer paging, in-process mesh, and the ASTRO-style grant kernel are in this repo. The plan that does not fail: [`docs/PLAN.md`](docs/PLAN.md).
+
+```bash
+python -m pytest tests/test_edge.py tests/test_privacy.py tests/test_data_catalog.py tests/test_tools.py -q
+python demos_edge.py    # cctv see-path, phone agent, 2-peer mesh — cloud denied; exit 0
+```
+
+- [`docs/ISA.md`](docs/ISA.md) — SARA-ISA ops (GQA, RoPE, RMSNorm, SwiGLU, conv-T, mel) and CPU → INT8 → FPGA → 28nm ASIC
+- [`docs/GRANTS.md`](docs/GRANTS.md) — TIDE 2.0 / IndiaAI / DLI checklist; **DPIIT is the grant gate**; Pvt Ltd is a blocker
+- [`docs/DATASETS.md`](docs/DATASETS.md) — adapters only (`sara.data`); never vendor TB into git
 
 ## Train notes
 
@@ -158,4 +174,4 @@ tests/           outputs/  data/  tokenizer/  checkpoints/
 
 ## License
 
-Code in this repository is original. Training text is short original/public-domain sentences plus synthetic programs and shapes — no scraped books.
+[Apache License 2.0](LICENSE). Training text is short original/public-domain sentences plus synthetic programs and shapes — no scraped books.

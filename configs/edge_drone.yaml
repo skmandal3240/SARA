@@ -1,0 +1,16 @@
+# SARA drone payload — see + radio mesh, cloud off
+profile: drone
+ram_mb: 2048
+tops: 3.0
+cameras: 1
+radios: [radio, wifi]
+mesh_allowed: true
+cloud_allowed: false
+modalities: [vision, text, audio]
+policy_tags: [camera]
+npu: true
+battery: true
+quantize: int8
+paging: true
+owner_operated: true
+role: sensor

@@ -46,3 +46,13 @@ def test_modality_heads():
     assert "notes" in song and "key" in song
     td = model.tool_decision(x)
     assert td["tool"].shape[-1] == cfg.max_tools
+
+
+def test_number_head_scalar():
+    model, cfg = _tiny()
+    x = torch.randint(1, 20, (1, 6))
+    out = model.read_number(x)
+    assert out["value"].shape[0] == 1
+    assert out["is_num"].shape == out["value"].shape
+    assert out["num"].shape == out["value"].shape
+    assert torch.isfinite(out["num"]).all()

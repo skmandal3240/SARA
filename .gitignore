@@ -23,3 +23,12 @@ outputs/agent_transcript.txt
 .env
 .idea/
 .vscode/
+
+# dataset adapters — cache never in git (manifests under data/manifests/ are committed)
+data/hf_cache/
+data/cache/
+*.key
+outputs/*vault*
+outputs/edge_audit.jsonl
+outputs/edge_*.txt
+outputs/edge_*.json

@@ -1,0 +1,9 @@
+{
+  "family": "indic_text",
+  "ids": [
+    "indiccorp",
+    "sangraha",
+    "samanantar"
+  ],
+  "note": "adapters only; stream with max_tokens; do not vendor TB"
+}

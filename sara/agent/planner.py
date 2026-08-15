@@ -40,7 +40,7 @@ class Plan:
 
 _WRITE_RUN = re.compile(r"(write|create).*(python|script|program|file)|fibonacci|multi-step", re.I)
 _SEARCH = re.compile(r"search|look up|who is|what is", re.I)
-_CALC = re.compile(r"calculat|how much|plus|times \d", re.I)
+_CALC = re.compile(r"calculat|how much|plus|times \d|\d+\s*[+\-*x×/]\s*\d+", re.I)
 
 
 def decompose(goal: str) -> Plan:
@@ -57,15 +57,15 @@ def decompose(goal: str) -> Plan:
             Step(4, "Report the numeric or textual result", None,
                  hint="Final answer only."),
         ]
-    elif _SEARCH.search(g):
-        steps = [
-            Step(1, "Search the web for the query", "web_search"),
-            Step(2, "Summarize findings as the final answer", None),
-        ]
     elif _CALC.search(g):
         steps = [
             Step(1, "Evaluate the expression", "calc"),
             Step(2, "Report the value", None),
+        ]
+    elif _SEARCH.search(g):
+        steps = [
+            Step(1, "Search the web for the query", "web_search"),
+            Step(2, "Summarize findings as the final answer", None),
         ]
     else:
         steps = [

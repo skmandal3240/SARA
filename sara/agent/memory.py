@@ -67,8 +67,60 @@ class LongTermMemory:
         q = query.lower().split()
         scored = []
         for item in self._load():
-            text = item.get("text", "").lower()
+            if item.get("forgotten"):
+                continue
+            text = (item.get("text") or item.get("value") or "").lower()
             score = sum(1 for w in q if w in text)
             scored.append((score, item))
         scored.sort(key=lambda x: x[0], reverse=True)
         return [it for s, it in scored[:k] if s > 0] or [s[1] for s in scored[:k]]
+
+    def remember(self, key: str, value: str, kind: str = "fact") -> dict:
+        """Typed memory: kind is fact | profile | episode. This is not RAG."""
+        if kind not in {"fact", "profile", "episode"}:
+            raise ValueError(f"unknown memory kind {kind!r}")
+        items = self._load()
+        row = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "kind": kind,
+            "key": key,
+            "value": value,
+            "text": f"{key}: {value}",
+            "tag": kind,
+            "forgotten": False,
+        }
+        items.append(row)
+        self.path.write_text(json.dumps(items, indent=2), encoding="utf-8")
+        return row
+
+    def forget(self, key: str) -> int:
+        items = self._load()
+        n = 0
+        for item in items:
+            if item.get("key") == key and not item.get("forgotten"):
+                item["forgotten"] = True
+                item["forgotten_ts"] = datetime.now(timezone.utc).isoformat()
+                n += 1
+        self.path.write_text(json.dumps(items, indent=2), encoding="utf-8")
+        return n
+
+    def facts(self, kind: Optional[str] = None) -> list[dict]:
+        out = []
+        for item in self._load():
+            if item.get("forgotten"):
+                continue
+            if "key" not in item:
+                continue
+            if kind and item.get("kind") != kind:
+                continue
+            out.append(item)
+        return out
+
+    def profile_inject(self) -> str:
+        """Render living profile facts for the system prompt. Not a vector store dump."""
+        lines = []
+        for item in self.facts(kind="profile"):
+            lines.append(f"- {item['key']}: {item['value']}")
+        if not lines:
+            return ""
+        return "User profile:\n" + "\n".join(lines)

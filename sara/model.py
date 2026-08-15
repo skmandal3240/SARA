@@ -30,6 +30,23 @@ class ToolHead(nn.Module):
         return {"tool": self.cls(h), "stop": self.stop(h)}
 
 
+class NumberHead(nn.Module):
+    """xVal-style scalar: pooled hidden → is-number gate and a value.
+
+    Decode as the [NUM] token times `value`. Tiny Linear stub — not a numeric LM.
+    """
+
+    def __init__(self, dim: int):
+        super().__init__()
+        self.gate = nn.Linear(dim, 1)
+        self.value = nn.Linear(dim, 1)
+
+    def forward(self, h: torch.Tensor) -> dict[str, torch.Tensor]:
+        g = self.gate(h).squeeze(-1)
+        v = self.value(h).squeeze(-1)
+        return {"is_num": g, "value": v, "num": torch.sigmoid(g) * v}
+
+
 class SARA(nn.Module):
     """See / Articulate / Reason / Author — one transformer, many heads."""
 
@@ -57,6 +74,7 @@ class SARA(nn.Module):
         self.video_dec = VideoDecoder(config)
         self.song_head = SongHead(config)
         self.tool_head = ToolHead(config.dim, config.max_tools)
+        self.number_head = NumberHead(config.dim)
 
         self.apply(self._init_weights)
 
@@ -210,6 +228,10 @@ class SARA(nn.Module):
     def tool_decision(self, tokens: torch.Tensor) -> dict:
         cond = self.cond_from_tokens(tokens)
         return self.tool_head(cond)
+
+    def read_number(self, tokens: torch.Tensor) -> dict:
+        cond = self.cond_from_tokens(tokens)
+        return self.number_head(cond)
 
 
 def causal_mask(t: int, device, dtype) -> torch.Tensor:
