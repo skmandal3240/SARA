@@ -16,7 +16,7 @@ Nano weights are a **proof of the runtime**. The architecture and agent stack ar
 | **CREATE IMAGE** | Pooled hidden → conv-transpose RGB (64×64) | Trained on synthetic colored shapes |
 | **CREATE VIDEO** | Time-conditioned frame decoder → GIF | Short 8-frame GIF, low res |
 | **CREATE SONG** | SongHead (key/tempo/scale/notes) + additive synth (melody+bass+pad+hats) | Not a sine beep; not a studio model |
-| **TOOLS / AGENTS** | JSON/`<\|tool_call\|>` protocol, ToolHead, ReAct loop, planner, swarm | Runtime is real; nano LM often needs the planner to pick tools |
+| **TOOLS / AGENTS** | JSON/`<\|tool_call\|>` protocol, ToolHead, ReAct loop, planner, swarm | Runtime is real; nano demo writes+runs `fib.py` and reports 55. Weights are still nano. |
 
 ## Architecture glance
 

@@ -16,6 +16,8 @@ outputs/*.wav
 outputs/*.gif
 outputs/*.png
 outputs/*.pt
+outputs/sara_memory.json
+outputs/agent_transcript.txt
 *.pt
 .DS_Store
 .env

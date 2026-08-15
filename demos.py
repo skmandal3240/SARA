@@ -163,14 +163,9 @@ def demo_agent(model, tok, cfg) -> None:
     (OUT / "agent_final.txt").write_text(res.final, encoding="utf-8")
     print("final:", res.final)
     print("steps", res.steps, "tool_calls", res.tool_calls, "ok", res.ok)
-    if "55" not in str(res.final) and "55" not in res.transcript:
-        # still require that a python file was written and executed
-        py = ROOT / "outputs" / "agent_task.py"
-        if not py.exists():
-            raise RuntimeError("agent did not write agent_task.py")
-        print("note: final text missed 55 but file exists")
-    else:
-        print("agent produced 55")
+    if "55" not in str(res.final):
+        raise RuntimeError(f"agent did not report 55 (final={res.final!r})")
+    print("agent produced 55")
 
 
 def demo_swarm(model, tok, cfg) -> None:
