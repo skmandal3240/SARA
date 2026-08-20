@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use SARA in academic work, please cite it as below."
+title: "SARA — See, Articulate, Reason, Author"
+version: 0.1.0
+date-released: 2026-08-12
+license: Apache-2.0
+repository-code: "https://github.com/skmandal3240/SARA"
+authors:
+  - family-names: Mandal
+    given-names: Saurabh
+    affiliation: "SARA AI"
+    orcid: ""
+keywords:
+  - multimodal
+  - transformer
+  - from-scratch
+  - edge-ai
+  - privacy
+  - agents
+  - on-device
+abstract: "SARA is a from-scratch multimodal transformer (text, vision, audio, code, image, video, song) with a first-class tool-using agent runtime. Edge-first: same binary, different device profile; runs on CPU; no cloud required."
+preferred-citation:
+  type: software
+  title: "SARA — See, Articulate, Reason, Author"
+  year: 2026
+  publisher: "SARA AI"
+  url: "https://github.com/skmandal3240/SARA"

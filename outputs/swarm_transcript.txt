@@ -1,4 +1,4 @@
 ORCHESTRATOR goal: Write a python program that prints factorial of 6.
 orchestrator sketch: 
-coder: ok=True {"ok": true, "tool": "shell", "result": {"argv": ["/workspace/SARA/.venv/bin/python", "outputs/swarm_coder.py"], "returncode": 0, "stdout": "720\n", "stderr": ""}}
+coder: ok=True {"ok": true, "tool": "shell", "result": {"argv": ["python3", "outputs/swarm_coder.py"], "returncode": 0, "stdout": "720\n", "stderr": ""}}
 critic: ACCEPT (empty critic; product nonempty)

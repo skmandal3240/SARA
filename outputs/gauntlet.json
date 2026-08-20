@@ -1,7 +1,5 @@
 {
-  "failed": [
-    "demo_agent"
-  ],
+  "failed": [],
   "n": 9,
-  "passed": 8
+  "passed": 9
 }
