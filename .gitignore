@@ -12,13 +12,23 @@ checkpoints/**/*.bin
 data/*.bin
 data/*.wav
 data/shapes/
+# All generated demo outputs — reviewers run demos.py and should not see a 30-file diff
 outputs/*.wav
 outputs/*.gif
 outputs/*.png
 outputs/*.pt
+outputs/*.json
+outputs/*.txt
+outputs/*.py
+outputs/*.jsonl
+outputs/*.jpg
+outputs/*.jpeg
 outputs/sara_memory.json
 outputs/agent_transcript.txt
-*.pt
+outputs/*vault*
+outputs/edge_audit.jsonl
+outputs/edge_*.txt
+outputs/edge_*.json
 .DS_Store
 .env
 .idea/
@@ -28,7 +38,4 @@ outputs/agent_transcript.txt
 data/hf_cache/
 data/cache/
 *.key
-outputs/*vault*
-outputs/edge_audit.jsonl
-outputs/edge_*.txt
 outputs/edge_*.json
