@@ -39,3 +39,4 @@ data/hf_cache/
 data/cache/
 *.key
 outputs/edge_*.json
+data/drive_corpus.txt
