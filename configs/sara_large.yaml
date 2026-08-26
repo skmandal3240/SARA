@@ -1,0 +1,12 @@
+# SARA large — ~503M params (Kaggle P100 / multi-GPU; NOT T4-trainable at scale)
+preset: large
+rope_theta: 10000.0
+qk_norm: true
+tie_embeddings: true
+sample_rate: 16000
+n_mels: 64
+n_fft: 512
+hop_length: 160
+n_note_steps: 32
+max_tools: 32
+max_agent_steps: 8

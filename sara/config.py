@@ -113,6 +113,30 @@ class SARAConfig:
         )
 
     @classmethod
+    def large(cls) -> "SARAConfig":
+        """~503M params — Kaggle-scale training on public datasets. Does NOT fit
+        T4 x2 for full training; needs P100 (32GB) with bf16 + small batch, or
+        multi-GPU / IndiaAI GPUs. Inference fits a single 16GB GPU in int8."""
+        return cls(
+            dim=1024,
+            n_layers=28,
+            n_heads=16,
+            n_kv_heads=4,
+            mlp_mult=3.0,
+            max_seq_len=2048,
+            vocab_size=32768,
+            vision_layers=8,
+            vision_heads=16,
+            audio_layers=6,
+            img_size=128,
+            patch_size=8,
+            video_size=96,
+            n_video_frames=8,
+            audio_frames=80,
+            n_note_steps=32,
+        )
+
+    @classmethod
     def medium(cls) -> "SARAConfig":
         """~128M params — for ~4 GB of text (~1B tokens). Needs Kaggle T4 x2 / P100
         (bf16, grad checkpointing). Trains ~12-18h for 30-50k steps. This is the
@@ -177,6 +201,12 @@ class SARAConfig:
             return cfg
         if preset == "medium":
             cfg = cls.medium()
+            for k, v in data.items():
+                if hasattr(cfg, k):
+                    setattr(cfg, k, v)
+            return cfg
+        if preset == "large":
+            cfg = cls.large()
             for k, v in data.items():
                 if hasattr(cfg, k):
                     setattr(cfg, k, v)
