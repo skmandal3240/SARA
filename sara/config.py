@@ -113,6 +113,30 @@ class SARAConfig:
         )
 
     @classmethod
+    def medium(cls) -> "SARAConfig":
+        """~128M params — for ~4 GB of text (~1B tokens). Needs Kaggle T4 x2 / P100
+        (bf16, grad checkpointing). Trains ~12-18h for 30-50k steps. This is the
+        biggest preset that still fits free GPUs."""
+        return cls(
+            dim=576,
+            n_layers=22,
+            n_heads=12,
+            n_kv_heads=4,
+            mlp_mult=2.5,
+            max_seq_len=1024,
+            vocab_size=16384,
+            vision_layers=6,
+            vision_heads=12,
+            audio_layers=4,
+            img_size=96,
+            patch_size=8,
+            video_size=64,
+            n_video_frames=8,
+            audio_frames=80,
+            n_note_steps=32,
+        )
+
+    @classmethod
     def tiny(cls) -> "SARAConfig":
         """Even smaller CPU smoke config."""
         return cls(
@@ -147,6 +171,12 @@ class SARAConfig:
             return cfg
         if preset == "small":
             cfg = cls.small()
+            for k, v in data.items():
+                if hasattr(cfg, k):
+                    setattr(cfg, k, v)
+            return cfg
+        if preset == "medium":
+            cfg = cls.medium()
             for k, v in data.items():
                 if hasattr(cfg, k):
                     setattr(cfg, k, v)
