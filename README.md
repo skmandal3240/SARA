@@ -2,7 +2,12 @@
 
 A from-scratch multimodal transformer with a first-class tool-using agent runtime.
 
-**Stack:** PyTorch (CPU). **License:** Apache-2.0. **Status:** PoC.
+**Stack:** PyTorch (CPU). **License:** Apache-2.0. **Status:** PoC — nano (~10.8M) + small (~44.9M) presets.
+
+| Preset | Params | Config | Train |
+|---|---|---|---|
+| `nano` | 10.8M | `configs/sara_nano.yaml` | CPU, ~15 s (`train.py --steps 50`) |
+| `small` | 44.9M | `configs/sara_small.yaml` | Colab T4 ~1–2 h for 5k steps (`train_small.py --steps 5000`) |
 
 [SARA — See, Articulate, Reason, Author](#what-sara-is) · [Quickstart](#quickstart) · [Architecture](#architecture) · [Agents and tools](#agents-and-tools) · [Edge runtime](#edge-runtime) · [Tests and demos](#tests-and-demos) · [Layout](#layout) · [Docs](#docs) · [Why this exists](#why-this-exists)
 
@@ -41,6 +46,13 @@ Generate text:
 ```bash
 python generate.py --prompt "The sun is a star"
 python generate.py --code --prompt "print the 10th fibonacci number"
+```
+
+Train the 45M preset (Colab T4 or any GPU):
+
+```bash
+python train_small.py --steps 5000          # CUDA if available
+python train_small.py --steps 5 --device cpu  # CPU smoke run
 ```
 
 Run the agent:

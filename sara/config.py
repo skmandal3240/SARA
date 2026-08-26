@@ -90,6 +90,29 @@ class SARAConfig:
         return cls()
 
     @classmethod
+    def small(cls) -> "SARAConfig":
+        """~45M params — demo/showcase scale. Still CPU-trainable for a few hundred steps;
+        real training needs a GPU (Colab T4 / IndiaAI)."""
+        return cls(
+            dim=384,
+            n_layers=16,
+            n_heads=8,
+            n_kv_heads=4,
+            mlp_mult=2.5,
+            max_seq_len=512,
+            vocab_size=4096,
+            vision_layers=4,
+            vision_heads=8,
+            audio_layers=3,
+            img_size=96,
+            patch_size=8,  # 12x12 = 144 patches
+            video_size=64,
+            n_video_frames=8,
+            audio_frames=80,
+            n_note_steps=32,
+        )
+
+    @classmethod
     def tiny(cls) -> "SARAConfig":
         """Even smaller CPU smoke config."""
         return cls(
@@ -118,6 +141,12 @@ class SARAConfig:
         preset = data.pop("preset", None)
         if preset == "tiny":
             cfg = cls.tiny()
+            for k, v in data.items():
+                if hasattr(cfg, k):
+                    setattr(cfg, k, v)
+            return cfg
+        if preset == "small":
+            cfg = cls.small()
             for k, v in data.items():
                 if hasattr(cfg, k):
                     setattr(cfg, k, v)

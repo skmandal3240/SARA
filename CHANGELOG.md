@@ -5,6 +5,7 @@ All notable changes to SARA are documented here. Format follows [Keep a Changelo
 ## [0.1.0] — 2026-08-12
 
 ### Added
+- **`small` preset (~44.9M params)** — `configs/sara_small.yaml` + `train_small.py` (Colab T4-ready training loop, CPU smoke mode). Verified: forward pass + 3-step CPU train run.
 - From-scratch multimodal transformer (10.8M params) — text, vision, audio, code, image, video, song modalities.
 - First-class tool-using agent runtime: `<|tool_call|>` JSON protocol, AST-sandboxed Python exec, ReAct loop, planner, swarm delegation.
 - Edge runtime: 9 device profiles (cctv, drone, phone, laptop, tv, robot, ev, server, db), INT8 quant path, layer-paging for 2–4 GB RAM class, in-process mesh DAG.
