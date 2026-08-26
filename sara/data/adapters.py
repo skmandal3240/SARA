@@ -116,6 +116,14 @@ def ingest_source(spec: str, max_tokens: int = 2048) -> list[str]:
     if spec.startswith("hf:"):
         rec = stream_hf(spec[3:], max_tokens=max_tokens)
         return list(rec.get("texts") or [])
+    if spec.startswith("file:"):
+        # local text corpus (one doc per <|doc|> separator)
+        from pathlib import Path as _P
+
+        p = _P(spec[5:])
+        raw = p.read_text(encoding="utf-8")
+        docs = [d.strip() for d in raw.split("<|doc|>") if len(d.strip()) >= 200]
+        return docs
     if spec in catalog.DATASETS:
         rec = load_sample(spec, max_tokens=max_tokens)
         return list(rec.get("texts") or [])
