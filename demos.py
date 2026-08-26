@@ -15,6 +15,9 @@ import torch
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "outputs"
 CKPT = ROOT / "checkpoints" / "sara_nano" / "sara.pt"
+# demos run against the nano checkpoint, whose tokenizer (768 vocab) is frozen
+# here — prepare_data.py --source rewrites the main tokenizer for bigger presets.
+TOK_DIR = ROOT / "tokenizer" / "nano"
 
 
 def _banner(name: str) -> None:
@@ -22,9 +25,16 @@ def _banner(name: str) -> None:
 
 
 def load():
+    import torch
     from generate import load_sara
+    from sara.tokenizer import SARATokenizer
 
     model, tok, cfg = load_sara(CKPT if CKPT.exists() else None)
+    if CKPT.exists() and TOK_DIR.exists():
+        # swap in the checkpoint-matching tokenizer so encode/decode agree with weights
+        tok = SARATokenizer.from_file(TOK_DIR / "sara.json")
+        cfg.pad_id, cfg.bos_id, cfg.eos_id = tok.pad_id, tok.bos_id, tok.eos_id
+        assert cfg.vocab_size == tok.vocab_size, (cfg.vocab_size, tok.vocab_size)
     return model, tok, cfg
 
 
