@@ -20,10 +20,13 @@ def load_sara(ckpt: Path | None, device: str = "cpu"):
     if ckpt and ckpt.exists():
         blob = torch.load(ckpt, map_location=device, weights_only=False)
         cfg = SARAConfig.from_dict(blob["config"])
-        cfg.vocab_size = tok.vocab_size
+        # ponytail: trust the checkpoint's own config (incl. vocab); only fill
+        # special ids if absent. Overriding vocab from the tokenizer file caused
+        # size mismatches when small-preset checkpoints were loaded.
         cfg.pad_id, cfg.bos_id, cfg.eos_id = tok.pad_id, tok.bos_id, tok.eos_id
         model = SARA(cfg)
-        model.load_state_dict(blob["model"], strict=False)
+        missing, unexpected = model.load_state_dict(blob["model"], strict=False)
+        assert not [k for k in missing if "rotary" not in k], f"missing keys: {missing}"
     else:
         cfg = SARAConfig.nano()
         cfg.vocab_size = tok.vocab_size
